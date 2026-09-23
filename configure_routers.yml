@@ -1,0 +1,18 @@
+---
+- name: Configure Cisco Routers from NetBox Source of Truth
+  hosts: device_roles_cisco_routers
+  gather_facts: false
+  connection: network_cli
+
+  tasks:
+    - name: Get IP addresses assigned to this device from NetBox
+      netbox.netbox.netbox_ip_address:
+        netbox_url: http://localhost:8000
+        netbox_token: "nbt_ym4SNfFofImH.Hi5TWwGn1nHUYUsr252P63prZphMAgrhPuKEXL2A"
+        data:
+          device: "{{ inventory_hostname }}"
+      register: device_ips
+
+    - name: Push generated interface configurations to router
+      cisco.ios.ios_config:
+        src: router_configs.j2

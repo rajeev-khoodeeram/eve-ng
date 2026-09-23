@@ -1,0 +1,7 @@
+{% for ip in netbox_ip_addresses %}
+interface {{ ip.assigned_object.interface.name }}
+ description {{ ip.description | default('Configured via NetBox and Ansible') }}
+ ip address {{ ip.address | ansible.utils.ipaddr('address') }} {{ ip.address | ansible.utils.ipaddr('netmask') }}
+ no shutdown
+exit
+{% endfor %}

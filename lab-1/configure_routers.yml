@@ -1,0 +1,30 @@
+- name: Automate Cisco 2-Node Network from NetBox
+  hosts: device_roles_cisco_routers
+  gather_facts: no
+
+  tasks:
+    - name: Configure global settings
+      cisco.ios.ios_config:
+        lines:
+          - ip domain name netdevops.lab
+
+    - name: Configure Management Interface (GigabitEthernet0/0)
+      cisco.ios.ios_config:
+        parents: "interface GigabitEthernet0/0"
+        lines:
+          - ip address {{ primary_ip4.split('/')[0] }} 255.255.255.0
+          - no shutdown
+    - name: Configure Loopback0 Interface
+      cisco.ios.ios_config:
+        parents: "interface Loopback0"
+        lines:
+          - ip address {{ '10.255.0.1' if inventory_hostname == 'PAR-R1' else '10.255.0.2' }} 255.255.255.0
+
+    - name: Enable OSPF Process 1
+      cisco.ios.ios_config:
+        parents: "router ospf 1"
+        lines:
+          - router-id {{ '10.255.0.1' if inventory_hostname == 'PAR-R1' else '10.255.0.2' }}
+          - network 10.10.0.0 0.0.0.255 area 0
+          - network 10.255.0.0 0.0.0.255 area 0
+        save_when: changed

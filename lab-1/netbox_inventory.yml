@@ -1,0 +1,22 @@
+plugin: netbox.netbox.nb_inventory
+
+api_endpoint: http://localhost:8000
+token: "nbt_ym4SNfFofImH.Hi5TWwGn1nHUYUsr252P63prZphMAgrhPuKEXL2A"
+validate_certs: false
+
+# ONLY fetch devices that belong to the 'lab1' tenant
+query_filters:
+  - site: par-dc1
+
+group_by:
+  - sites
+  - device_roles
+
+group_empty_groups: false 
+
+compose:
+  ansible_connection: "'ansible.netcommon.network_cli'"
+  #ansible_network_os: "platform.slug | replace('-', '.') | replace('_', '.')"
+  ansible_network_os: "platform.slug | default('cisco-ios') | replace('-', '.ios.') | replace('_', '.')"
+  ansible_user: "'cisco'"
+  ansible_password: "'cisco'"
