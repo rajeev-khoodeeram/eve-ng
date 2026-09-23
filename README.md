@@ -8,10 +8,10 @@ The objective is to simulate how modern enterprises manage network infrastructur
 
 This lab demonstrates how enterprise network teams can implement:
 
-Network Infrastructure as Code
-Centralized network inventory
-Automated device provisioning
-Dynamic Ansible inventory
+  Network Infrastructure as Code
+  Centralized network inventory
+  Automated device provisioning
+  Dynamic Ansible inventory
 F5 load-balancer automation
 Configuration management
 Configuration drift detection
