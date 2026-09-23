@@ -12,12 +12,12 @@ This lab demonstrates how enterprise network teams can implement:
   Centralized network inventory
   Automated device provisioning
   Dynamic Ansible inventory
-F5 load-balancer automation
-Configuration management
-Configuration drift detection
-Network security automation
-Multi-site infrastructure management
-Repeatable deployments
-Git-based infrastructure management
-
+  F5 load-balancer automation
+  Configuration management
+  Configuration drift detection
+  Network security automation
+  Multi-site infrastructure management
+  Repeatable deployments
+  Git-based infrastructure management
+  
 The design is intentionally structured to resemble an enterprise environment with multiple data centers and network segments.
