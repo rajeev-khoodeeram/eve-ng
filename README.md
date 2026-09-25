@@ -1,5 +1,4 @@
 # eve-ng
-<<<<<<< HEAD
 =======
 
 
@@ -94,3 +93,27 @@ For open source projects, say how it is licensed.
 ## Project status
 If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
 >>>>>>> 1ea6080aaca47fb693f1c48e4ae8b65e9ee7ca29
+=======
+EVE-NG Enterprise Network Automation Lab
+
+
+
+The objective is to simulate how modern enterprises manage network infrastructure across multiple data centers and sites using a centralized Source of Truth, Infrastructure as Code, configuration automation, and automated compliance.
+
+
+## Project Objectives
+
+This lab demonstrates:
+
+- Network Infrastructure as Code
+- Centralized network inventory
+- Automated device provisioning
+- Dynamic Ansible inventory
+- F5 load-balancer automation
+- Configuration management
+- Configuration drift detection
+- Network security automation
+- Multi-site infrastructure management
+  
+The design is intentionally structured to resemble an enterprise environment with multiple data centers and network segments.
+>>>>>>> 5b503a8520d00a96db4319d3300310bd5df922f4
