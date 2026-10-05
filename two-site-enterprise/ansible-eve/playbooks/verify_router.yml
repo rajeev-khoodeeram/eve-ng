@@ -1,0 +1,29 @@
+---
+- name: Verify SITE1-R1
+  hosts: SITE1-R1
+  gather_facts: false
+  connection: local
+
+  vars:
+    telnet_user: ansible
+    telnet_password: ansible123
+
+  tasks:
+    - name: Show management interface
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        command:
+          - terminal length 0
+          - show running-config interface GigabitEthernet0/2
+      register: result
+
+    - name: Display configuration
+      ansible.builtin.debug:
+        var: result

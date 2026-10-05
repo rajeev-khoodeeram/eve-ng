@@ -1,0 +1,153 @@
+---
+- name: Controlled configuration change on SITE1-R1
+  hosts: SITE1-R1
+  gather_facts: false
+  connection: local
+
+  vars:
+    telnet_user: ansible
+    telnet_password: ansible123
+    desired_description: ANSIBLE-MANAGED-MGMT
+
+  tasks:
+
+    # --------------------------------------------------
+    # PRE-CHECK
+    # --------------------------------------------------
+
+    - name: Pre-check management interface
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 180
+        command:
+          - terminal length 0
+          - show running-config interface GigabitEthernet0/2
+      register: precheck
+
+    - name: Display pre-check
+      ansible.builtin.debug:
+        var: precheck.stdout
+
+    # --------------------------------------------------
+    # BACKUP
+    # --------------------------------------------------
+
+    - name: Create backup directory
+      ansible.builtin.file:
+        path: backups
+        state: directory
+        mode: "0700"
+      when: desired_description not in precheck.stdout
+
+    - name: Create backup
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 180
+        command:
+          - terminal length 0
+          - show running-config
+      register: backup_result
+      when: desired_description not in precheck.stdout
+
+    - name: Save pre-change backup
+      ansible.builtin.copy:
+        content: "{{ backup_result.stdout }}"
+        dest: "../backups/{{ inventory_hostname }}-prechange-{{ lookup('pipe', 'date +%Y%m%d-%H%M%S') }}.cfg"
+        mode: "0600"
+      when:
+        - desired_description not in precheck.stdout
+        - backup_result is defined
+
+    # --------------------------------------------------
+    # CHANGE
+    # --------------------------------------------------
+
+    - name: Configure management description
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 180
+        command:
+          - configure terminal
+          - interface GigabitEthernet0/2
+          - "description {{ desired_description }}"
+          - end
+      register: change_result
+      when: desired_description not in precheck.stdout
+
+    # --------------------------------------------------
+    # SAVE
+    # --------------------------------------------------
+
+    - name: Save configuration
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 180
+        command:
+          - write memory
+      register: save_result
+      when: desired_description not in precheck.stdout
+
+    # --------------------------------------------------
+    # POST-CHECK
+    # --------------------------------------------------
+
+    - name: Verify management description
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 180
+        command:
+          - terminal length 0
+          - show running-config interface GigabitEthernet0/2
+      register: postcheck
+
+    - name: Verify desired configuration exists
+      ansible.builtin.assert:
+        that:
+          - desired_description in postcheck.stdout
+        fail_msg: "The desired interface description was not found."
+        success_msg: "Configuration verified successfully."
+
+    - name: Report change status
+      ansible.builtin.debug:
+        msg: >-
+          {{
+            'Configuration changed and verified.'
+            if desired_description not in precheck.stdout
+            else
+            'Configuration already correct - no change required.'
+          }}

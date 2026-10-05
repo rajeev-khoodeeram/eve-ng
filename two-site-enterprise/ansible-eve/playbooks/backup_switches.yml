@@ -1,0 +1,43 @@
+---
+- name: Backup Cisco switch configurations
+  hosts: switches
+  gather_facts: false
+  connection: local
+
+  vars:
+    telnet_user: ansible
+    telnet_password: ansible123
+
+  tasks:
+
+    - name: Ensure backup directory exists
+      ansible.builtin.file:
+        path: backups
+        state: directory
+        mode: "0700"
+
+    - name: Get running configuration
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 180
+        command:
+          - terminal length 0
+          - show running-config
+      register: backup_result
+
+    - name: Save running configuration locally
+      ansible.builtin.copy:
+        content: "{{ backup_result.stdout }}"
+        dest: "../backups/{{ inventory_hostname }}-running-config.txt"
+        mode: "0700"
+
+    - name: Confirm backup
+      ansible.builtin.debug:
+        msg: "Backup saved for {{ inventory_hostname }}"

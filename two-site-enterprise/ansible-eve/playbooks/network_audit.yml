@@ -1,0 +1,66 @@
+---
+- name: Audit Cisco IOS routers
+  hosts: routers
+  connection: local
+  gather_facts: false
+
+  vars:
+    telnet_user: ansible
+    telnet_password: ansible123
+
+  tasks:
+    - name: Run router audit commands
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        command:
+          - terminal length 0
+          - show version
+          - show ip interface brief
+          - show ip route
+          - show cdp neighbors
+      register: audit
+
+    - name: Display router audit
+      ansible.builtin.debug:
+        var: audit
+
+
+- name: Audit Cisco IOS switches
+  hosts: switches
+  connection: local
+  gather_facts: false
+
+  vars:
+    telnet_user: ansible
+    telnet_password: ansible123
+
+  tasks:
+    - name: Run switch audit commands
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        command:
+          - terminal length 0
+          - show version
+          - show ip interface brief
+          - show vlan brief
+          - show interfaces trunk
+          - show cdp neighbors
+      register: audit
+
+    - name: Display switch audit
+      ansible.builtin.debug:
+        var: audit

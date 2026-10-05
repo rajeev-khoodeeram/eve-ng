@@ -1,0 +1,277 @@
+
+
+User Access Verification
+
+Username: ansible
+Password: 
+SITE2-SW1#terminal length 0
+SITE2-SW1#show running-config
+Building configuration...
+
+Current configuration : 3524 bytes
+!
+version 15.1
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname SITE2-SW1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+username ansible privilege 15 secret 4 9odWqJUGTDnUQzVIrlutXEJo/RjkACVoUnuBqldmibc
+no aaa new-model
+no ip routing
+!
+no ip cef
+!
+!
+no ip domain-lookup
+no ipv6 cef
+ipv6 multicast rpf use-bgp
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+!
+!
+!
+!
+vlan internal allocation policy ascending
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ description TO-SITE2-R1-Gi0/0
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport mode trunk
+ duplex auto
+!
+interface Ethernet0/1
+ description TO-SITE2-SW2-Et0/0
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10,20,30,99
+ switchport mode trunk
+ duplex auto
+!
+interface Ethernet0/2
+ duplex auto
+!
+interface Ethernet0/3
+ duplex auto
+!
+interface Ethernet1/0
+ duplex auto
+!
+interface Ethernet1/1
+ duplex auto
+!
+interface Ethernet1/2
+ duplex auto
+!
+interface Ethernet1/3
+ duplex auto
+!
+interface Ethernet2/0
+ duplex auto
+!
+interface Ethernet2/1
+ duplex auto
+!
+interface Ethernet2/2
+ duplex auto
+!
+interface Ethernet2/3
+ duplex auto
+!
+interface Ethernet3/0
+ duplex auto
+!
+interface Ethernet3/1
+ duplex auto
+!
+interface Ethernet3/2
+ duplex auto
+!
+interface Ethernet3/3
+ duplex auto
+!
+interface Ethernet4/0
+ duplex auto
+!
+interface Ethernet4/1
+ duplex auto
+!
+interface Ethernet4/2
+ duplex auto
+!
+interface Ethernet4/3
+ duplex auto
+!
+interface Ethernet5/0
+ duplex auto
+!
+interface Ethernet5/1
+ duplex auto
+!
+interface Ethernet5/2
+ duplex auto
+!
+interface Ethernet5/3
+ duplex auto
+!
+interface Ethernet6/0
+ duplex auto
+!
+interface Ethernet6/1
+ duplex auto
+!
+interface Ethernet6/2
+ duplex auto
+!
+interface Ethernet6/3
+ duplex auto
+!
+interface Ethernet7/0
+ duplex auto
+!
+interface Ethernet7/1
+ duplex auto
+!
+interface Ethernet7/2
+ duplex auto
+!
+interface Ethernet7/3
+ duplex auto
+!
+interface Ethernet8/0
+ duplex auto
+!
+interface Ethernet8/1
+ duplex auto
+!
+interface Ethernet8/2
+ duplex auto
+!
+interface Ethernet8/3
+ duplex auto
+!
+interface Ethernet9/0
+ duplex auto
+!
+interface Ethernet9/1
+ duplex auto
+!
+interface Ethernet9/2
+ duplex auto
+!
+interface Ethernet9/3
+ duplex auto
+!
+interface Ethernet10/0
+ duplex auto
+!
+interface Ethernet10/1
+ duplex auto
+!
+interface Ethernet10/2
+ duplex auto
+!
+interface Ethernet10/3
+ duplex auto
+!
+interface Ethernet11/0
+ duplex auto
+!
+interface Ethernet11/1
+ duplex auto
+!
+interface Ethernet11/2
+ duplex auto
+!
+interface Ethernet11/3
+ duplex auto
+!
+interface Ethernet12/0
+ duplex auto
+!
+interface Ethernet12/1
+ duplex auto
+!
+interface Ethernet12/2
+ duplex auto
+!
+interface Ethernet12/3
+ duplex auto
+!
+interface Ethernet13/0
+ duplex auto
+!
+interface Ethernet13/1
+ duplex auto
+!
+interface Ethernet13/2
+ duplex auto
+!
+interface Ethernet13/3
+ duplex auto
+!
+interface Ethernet14/0
+ duplex auto
+!
+interface Ethernet14/1
+ duplex auto
+!
+interface Ethernet14/2
+ duplex auto
+!
+interface Ethernet14/3
+ duplex auto
+!
+interface Ethernet15/0
+ duplex auto
+!
+interface Ethernet15/1
+ duplex auto
+!
+interface Ethernet15/2
+ duplex auto
+!
+interface Ethernet15/3
+ duplex auto
+!
+interface Vlan99
+ description MANAGEMENT
+ ip address 10.20.10.11 255.255.255.0
+ no ip route-cache
+!
+ip default-gateway 10.20.10.1
+!
+!
+no ip http server
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login local
+ transport input telnet
+!
+end
+
+SITE2-SW1#

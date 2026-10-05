@@ -1,0 +1,19 @@
+---
+- name: Test Cisco IOS routers
+  hosts: routers
+  connection: ansible.netcommon.network_cli
+  gather_facts: false
+
+  vars:
+    ansible_network_os: cisco.ios.ios
+
+  tasks:
+    - name: Show interface status
+      cisco.ios.ios_command:
+        commands:
+          - show ip interface brief
+      register: result
+
+    - name: Display interface status
+      ansible.builtin.debug:
+        var: result.stdout_lines
