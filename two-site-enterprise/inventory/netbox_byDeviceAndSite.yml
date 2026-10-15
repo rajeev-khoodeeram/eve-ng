@@ -1,0 +1,37 @@
+plugin: netbox.netbox.nb_inventory
+
+api_endpoint: http://localhost:8000
+token: "nbt_ym4SNfFofImH.Hi5TWwGn1nHUYUsr252P63prZphMAgrhPuKEXL2A"
+
+#api_endpoint: "http://localhost:8000"
+#token: "nbt_ym4SNfFofImH.Hi5TWwGn1nHUYUsr252P63prZphMAgrhPuKEXL2A"
+
+validate_certs: false
+
+
+# Group devices by site and role automatically
+group_by:
+  - region
+  - manufacturers
+
+groups:
+  routers: "'edge-router' in device_roles"
+  switches: "'access-switch' in device_roles"
+  site1: "'site-1' in sites"
+  site2: "'site-2' in sites"
+
+
+# Optional query parameters to filter devices specific to this lab
+#query_filters:
+#  - tag: enterprise_lab
+
+
+# Map NetBox Platform slug directly to Ansible variables
+#compose:
+#  ansible_network_os: platform.slug
+#  ansible_connection: "'ansible.netcommon.network_cli'"
+
+
+compose:
+  ansible_connection: "'ansible.netcommon.network_cli'"
+  ansible_network_os: "'cisco.ios.ios'"

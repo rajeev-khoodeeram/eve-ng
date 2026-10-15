@@ -10,22 +10,28 @@ validate_certs: false
 
 
 # Group devices by site and role automatically
-group_by:
-  - sites
-  - region
-  - manufacturers
-  - device_roles
-# Optional query parameters to filter devices specific to this lab
-#query_filters:
-#  - tag: enterprise_lab
+#group_by:
+#  - sites
+#  - region
+#  - manufacturers
+#  - device_roles
 
 
-# Map NetBox Platform slug directly to Ansible variables
-#compose:
-#  ansible_network_os: platform.slug
-#  ansible_connection: "'ansible.netcommon.network_cli'"
+# Select only the new Two-Site tenant (ID 4)
+# and devices that have a primary IP.
+# Both conditions must apply to each device.
+device_query_filters:
+  - tenant_id: "4"
+  - has_primary_ip: "true"
 
+# Create clean Ansible groups.
+groups:
+  routers: "'edge-router' in device_roles"
+  switches: "'access-switch' in device_roles"
+  site1: "'site-1' in sites"
+  site2: "'site-2' in sites"
 
+# Build connection-related host variables.
 compose:
-  ansible_connection: "'ansible.netcommon.network_cli'"
+  ansible_host: primary_ip4.address | default('') | regex_replace('/.*$', '')
   ansible_network_os: "'cisco.ios.ios'"

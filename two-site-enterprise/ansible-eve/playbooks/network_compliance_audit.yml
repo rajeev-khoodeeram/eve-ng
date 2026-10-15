@@ -1,0 +1,242 @@
+---
+- name: Two-Site Network Compliance Audit
+  hosts: all
+  gather_facts: false
+  connection: local
+
+  vars:
+    # Lab credentials. Move these into Ansible Vault later.
+    telnet_user: ansible
+    telnet_password: ansible123
+
+    # Expected router interface IP addresses.
+    router_expected_ips:
+      SITE1-R1:
+        - "10.10.10.1"
+        - "10.255.0.1"
+        - "192.168.2.200"
+
+      SITE2-R1:
+        - "10.20.10.1"
+        - "10.255.0.2"
+
+    # Expected static routes between the two LANs.
+    router_expected_routes:
+      SITE1-R1:
+        - "10.20.10.0"
+
+      SITE2-R1:
+        - "10.10.10.0"
+
+    # Expected switch management addresses.
+    switch_expected_ips:
+      SITE1-SW1: "10.10.10.11"
+      SITE1-SW2: "10.10.10.12"
+      SITE1-SW3: "10.10.10.13"
+      SITE2-SW1: "10.20.10.11"
+      SITE2-SW2: "10.20.10.12"
+
+  tasks:
+
+    # ------------------------------------------------------
+    # INITIALIZE REPORT
+    # ------------------------------------------------------
+
+    - name: Initialize compliance results
+      ansible.builtin.set_fact:
+        compliance_results: []
+
+    - name: Display audit target
+      ansible.builtin.debug:
+        msg: >-
+          Auditing {{ inventory_hostname }}
+          at {{ ansible_host }}
+
+    # ------------------------------------------------------
+    # ROUTER AUDIT
+    # ------------------------------------------------------
+
+    - name: Collect router interface and route information
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 120
+        command:
+          - terminal length 0
+          - show ip interface brief
+          - show ip route
+      register: router_audit
+      when: "'edge-router' in (device_roles | default([]))"
+
+    - name: Extract router interface output
+      ansible.builtin.set_fact:
+        audit_interface_output: >-
+          {{
+            router_audit.output[1]
+            if (
+              router_audit.output is defined
+              and (router_audit.output | length) > 1
+            )
+            else (router_audit.stdout | default(''))
+          }}
+        audit_route_output: >-
+          {{
+            router_audit.output[2]
+            if (
+              router_audit.output is defined
+              and (router_audit.output | length) > 2
+            )
+            else (router_audit.stdout | default(''))
+          }}
+      when: "'edge-router' in (device_roles | default([]))"
+
+    - name: Check required router interface IP addresses
+      ansible.builtin.set_fact:
+        compliance_results: >-
+          {{
+            compliance_results + [
+              {
+                'check': 'Interface IP ' ~ item,
+                'status':
+                  ('PASS' if item in audit_interface_output else 'FAIL')
+              }
+            ]
+          }}
+      loop: "{{ router_expected_ips[inventory_hostname] }}"
+      when: "'edge-router' in (device_roles | default([]))"
+
+    - name: Check required inter-site routes
+      ansible.builtin.set_fact:
+        compliance_results: >-
+          {{
+            compliance_results + [
+              {
+                'check': 'Route to ' ~ item,
+                'status':
+                  ('PASS' if item in audit_route_output else 'FAIL')
+              }
+            ]
+          }}
+      loop: "{{ router_expected_routes[inventory_hostname] }}"
+      when: "'edge-router' in (device_roles | default([]))"
+
+    # ------------------------------------------------------
+    # SWITCH AUDIT
+    # ------------------------------------------------------
+
+    - name: Collect switch interface and VLAN information
+      ansible.netcommon.telnet:
+        host: "{{ ansible_host }}"
+        port: 23
+        user: "{{ telnet_user }}"
+        password: "{{ telnet_password }}"
+        login_prompt: "Username:"
+        password_prompt: "Password:"
+        prompts:
+          - "[>#]"
+        timeout: 120
+        command:
+          - terminal length 0
+          - show ip interface brief
+          - show vlan brief
+      register: switch_audit
+      when: "'access-switch' in (device_roles | default([]))"
+
+    - name: Extract switch audit output
+      ansible.builtin.set_fact:
+        audit_interface_output: >-
+          {{
+            switch_audit.output[1]
+            if (
+              switch_audit.output is defined
+              and (switch_audit.output | length) > 1
+            )
+            else (switch_audit.stdout | default(''))
+          }}
+        audit_vlan_output: >-
+          {{
+            switch_audit.output[2]
+            if (
+              switch_audit.output is defined
+              and (switch_audit.output | length) > 2
+            )
+            else (switch_audit.stdout | default(''))
+          }}
+      when: "'access-switch' in (device_roles | default([]))"
+
+    - name: Check switch management IP address
+      ansible.builtin.set_fact:
+        compliance_results: >-
+          {{
+            compliance_results + [
+              {
+                'check':
+                  'Management IP ' ~ switch_expected_ips[inventory_hostname],
+                'status':
+                  (
+                    'PASS'
+                    if switch_expected_ips[inventory_hostname]
+                       in audit_interface_output
+                    else 'FAIL'
+                  )
+              }
+            ]
+          }}
+      when: "'access-switch' in (device_roles | default([]))"
+
+    - name: Check that VLAN 99 exists
+      ansible.builtin.set_fact:
+        compliance_results: >-
+          {{
+            compliance_results + [
+              {
+                'check': 'Management VLAN 99 exists',
+                'status':
+                  (
+                    'PASS'
+                    if (audit_vlan_output | regex_search('(?m)^ *99 +'))
+                    else 'FAIL'
+                  )
+              }
+            ]
+          }}
+      when: "'access-switch' in (device_roles | default([]))"
+
+    # ------------------------------------------------------
+    # REPORT
+    # ------------------------------------------------------
+
+    - name: Display per-device compliance report
+      ansible.builtin.debug:
+        msg: >-
+          {{ inventory_hostname }} |
+          {{ item.status }} |
+          {{ item.check }}
+      loop: "{{ compliance_results }}"
+      loop_control:
+        label: "{{ item.check }}"
+
+    - name: Fail this device audit if checks failed
+      ansible.builtin.fail:
+        msg: >-
+          COMPLIANCE FAILURE on {{ inventory_hostname }}:
+          {{
+            compliance_results
+            | selectattr('status', 'equalto', 'FAIL')
+            | map(attribute='check')
+            | list
+            | join(', ')
+          }}
+      when: >-
+        (
+          compliance_results
+          | selectattr('status', 'equalto', 'FAIL')
+          | list
+          | length
+        ) > 0

@@ -1,0 +1,31 @@
+---
+plugin: netbox.netbox.nb_inventory
+
+api_endpoint: http://localhost:8000
+
+# Use your rotated NetBox token.
+token:
+  type: Bearer
+  value: "nbt_ym4SNfFofImH.Hi5TWwGn1nHUYUsr252P63prZphMAgrhPuKEXL2A"
+
+validate_certs: false
+config_context: false
+
+# Only inventory devices in the Two-Site lab tenant
+# that have a primary IP assigned.
+device_query_filters:
+  - tenant_id: "4"
+  - has_primary_ip: "true"
+
+# Organize the discovered inventory.
+group_by:
+  - sites
+  - region
+  - manufacturers
+  - device_roles
+
+# Derive Ansible connection variables.
+compose:
+  ansible_host: primary_ip4.address | default('') | regex_replace('/.*$', '')
+  ansible_connection: "'ansible.netcommon.network_cli'"
+  ansible_network_os: "'cisco.ios.ios'"
